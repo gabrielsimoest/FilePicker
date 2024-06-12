@@ -9,7 +9,7 @@ namespace ImagePicker.DataSources
 {
     internal interface IImageGoogleBucketDao
     {
-        Image GetImage(long id);
+        Image GetImage(Guid id);
 
         void SaveImage(Image image);
     }

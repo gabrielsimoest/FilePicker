@@ -12,7 +12,7 @@
             this.Id = Id;
         }
 
-        public Guid Id { get; set; }
-        public bool Stats { get; set; }
+        public Guid Id { get; }
+        public bool Status { get; set; }
     }
 }

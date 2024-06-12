@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace ImagePicker.DataSources
 {
-    internal interface IImageSqLiteDao
+    internal interface IImageEfCoreDao
     {
-        Image GetImage(long id);
+        Image ReadImage(Guid id);
 
-        void SaveImage(Image image);
+        void AddImage(Image image);
     }
 }

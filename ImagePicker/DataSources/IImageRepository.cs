@@ -11,6 +11,6 @@ namespace ImagePicker.DataSources
     {
         Image GetImage(Guid id);
 
-        void SaveImage(Image image);
+        Image SaveImage(Image image);
     }
 }

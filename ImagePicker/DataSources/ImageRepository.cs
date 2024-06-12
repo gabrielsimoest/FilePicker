@@ -1,22 +1,32 @@
 ﻿using ImagePicker.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ImagePicker.DataSources
 {
     internal class ImageRepository : IImageRepository
     {
-        public Image GetImage(Guid id)
+        private readonly IImageEfCoreDao _imageEfCoreDao;
+
+        public ImageRepository(IImageEfCoreDao imageEfCoreDao)
         {
-            throw new NotImplementedException();
+            _imageEfCoreDao = imageEfCoreDao;
         }
 
-        public void SaveImage(Image image)
+        public Image GetImage(Guid id)
         {
-            throw new NotImplementedException();
+            return _imageEfCoreDao.ReadImage(id);
+        }
+
+        public Image SaveImage(Image imageToSave)
+        {
+            Image image = new Image()
+            {
+                File = imageToSave.File,
+                Extension = imageToSave.Extension
+            };
+
+            _imageEfCoreDao.AddImage(image);
+
+            return image;
         }
     }
 }
