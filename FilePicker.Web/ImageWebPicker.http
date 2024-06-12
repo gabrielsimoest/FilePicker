@@ -1,0 +1,6 @@
+@ImageWebPicker_HostAddress = http://localhost:5255
+
+GET {{ImageWebPicker_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
