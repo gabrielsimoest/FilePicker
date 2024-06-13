@@ -11,22 +11,22 @@ namespace ImagePicker.DataSources
             _imageEfCoreDao = imageEfCoreDao;
         }
 
-        public Image GetImage(Guid id)
+        public async Task<Image> GetImage(Guid id)
         {
-            return _imageEfCoreDao.ReadImage(id);
+            return await _imageEfCoreDao.ReadImage(id);
         }
 
-        public List<Guid> GetImagesIdsList(short skip, short take)
+        public async Task<List<Guid>> GetImagesIdsList(short skip, short take)
         {
-            return _imageEfCoreDao.ReadImagesIdsList(skip, take);
+            return await _imageEfCoreDao.ReadImagesIdsList(skip, take);
         }
 
-        public Image GetInformations(Guid id)
+        public async Task<Image> GetInformations(Guid id)
         {
-            return _imageEfCoreDao.ReadInformations(id);
+            return await _imageEfCoreDao.ReadInformations(id);
         }
 
-        public Image SaveImage(Image imageToSave)
+        public async Task<Image> SaveImage(Image imageToSave)
         {
             Image image = new Image()
             {
@@ -35,7 +35,7 @@ namespace ImagePicker.DataSources
                 Status = true
             };
 
-            _imageEfCoreDao.AddImage(image);
+            await _imageEfCoreDao.AddImage(image);
 
             return image;
         }

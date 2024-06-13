@@ -22,16 +22,16 @@ namespace ImagePicker.Services
             }
         }
 
-        public void AddCacheImage(Image image, short width, short height)
+        public async Task AddCacheImage(Image image, short width, short height)
         {
             string extension = TreatExtension(image.Extension);
 
             string filePath = Path.Combine(_cacheDirectory, $"{image.Id}_{width}x{height}{extension}");
 
-            File.WriteAllBytes(filePath, image.File);
+            await File.WriteAllBytesAsync(filePath, image.File);
         }
 
-        public Image GetCachedImage(Guid id, short width, short height, string extension)
+        public async Task<Image> GetCachedImage(Guid id, short width, short height, string extension)
         {
             var extensionToSearch = TreatExtension(extension);
 
@@ -39,7 +39,7 @@ namespace ImagePicker.Services
 
             if (File.Exists(filePath))
             {
-                byte[] fileBytes = File.ReadAllBytes(filePath);
+                byte[] fileBytes = await File.ReadAllBytesAsync(filePath);
                 return new Image(id) { File = fileBytes, Extension = extension };
             }
             else

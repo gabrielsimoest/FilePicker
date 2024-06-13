@@ -22,10 +22,10 @@ namespace FilePicker.Web.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<ImagesListResult> Get(short skip, short take)
+        public async Task<IEnumerable<ImagesListResult>> Get(short skip, short take)
         {
             var imagesListResult = new List<ImagesListResult>();
-            var Ids = _imageRepository.GetImagesIdsList(skip, take);
+            var Ids = await _imageRepository.GetImagesIdsList(skip, take);
 
             var scheme = Request.Scheme;
             var host = Request.Host.Value;
@@ -44,9 +44,9 @@ namespace FilePicker.Web.Controllers
         }
 
         [HttpGet("{id}")]
-        public InformationResult GetInfo(Guid id)
+        public async Task<InformationResult> GetInfo(Guid id)
         {
-            var infos = _imageRepository.GetInformations(id);
+            var infos = await _imageRepository.GetInformations(id);
 
             var scheme = Request.Scheme;
             var host = Request.Host.Value;

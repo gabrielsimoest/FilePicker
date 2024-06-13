@@ -33,26 +33,26 @@ namespace ImagePicker
             _logger = logger;
         }
 
-        public Image GetImage(Guid id, short width, short height, bool preserveAspect)
+        public async Task<Image> GetImage(Guid id, short width, short height, bool preserveAspect)
         {
             var image = new Image(id);
             var extension = "image/webp";
 
             try
             {
-                image = _imageDiskCache.GetCachedImage(id, width, height, extension);
+                image = await _imageDiskCache.GetCachedImage(id, width, height, extension);
 
                 if (image.File.Length == 0)
                 {
-                    image = _imageRepository.GetImage(id);
+                    image = await _imageRepository.GetImage(id);
 
                     if (image.File.Length == 0)
                         throw new Exception("Image not found");
 
-                    image = _imageResizer.ResizeImage(image, width, height, preserveAspect);
-                    image = _imageWebpConverter.ConvertToWebP(image);
+                    image = await _imageResizer.ResizeImage(image, width, height, preserveAspect);
+                    image = await _imageWebpConverter.ConvertToWebP(image);
 
-                    _imageDiskCache.AddCacheImage(image, width, height);
+                    await _imageDiskCache.AddCacheImage(image, width, height);
                 }
             }
             catch (Exception ex)
@@ -63,24 +63,24 @@ namespace ImagePicker
             return image;
         }
 
-        public Image GetImage(Guid id, short width, short height, string extension, bool preserveAspect)
+        public async Task<Image> GetImage(Guid id, short width, short height, string extension, bool preserveAspect)
         {
             var image = new Image(id);
 
             try
             {
-                image = _imageDiskCache.GetCachedImage(id, width, height, extension);
+                image = await _imageDiskCache.GetCachedImage(id, width, height, extension);
 
                 if (image.File.Length == 0)
                 {
-                    image = _imageRepository.GetImage(id);
+                    image = await _imageRepository.GetImage(id);
 
                     if (image.File.Length == 0)
                         throw new Exception("Image not found");
 
-                    image = _imageResizer.ResizeImage(image, width, height, preserveAspect);
+                    image = await _imageResizer.ResizeImage(image, width, height, preserveAspect);
 
-                    _imageDiskCache.AddCacheImage(image, width, height);
+                    await _imageDiskCache.AddCacheImage(image, width, height);
                 }
             }
             catch (Exception ex)

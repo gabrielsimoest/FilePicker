@@ -9,7 +9,7 @@ namespace ImagePicker.Services
 {
     public interface IImageDiskPersistance
     {
-        void AddCacheImage(Image image, short width, short height);
-        Image GetCachedImage(Guid id, short width, short height, string extension);
+        Task AddCacheImage(Image image, short width, short height);
+        Task<Image> GetCachedImage(Guid id, short width, short height, string extension);
     }
 }

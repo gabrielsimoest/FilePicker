@@ -1,5 +1,6 @@
 ﻿using ImagePicker.Entities;
 using ImagePicker.Persistance.Data;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
 namespace ImagePicker.DataSources
@@ -13,11 +14,11 @@ namespace ImagePicker.DataSources
             _imagesContext = imagesContext;
         }
 
-        public Image ReadImage(Guid id)
+        public async Task<Image> ReadImage(Guid id)
         {
             try
             {
-                return _imagesContext.Images.Where(x => x.Id == id).First();
+                return await _imagesContext.Images.Where(x => x.Id == id).FirstAsync();
             }
             catch
             {
@@ -25,17 +26,17 @@ namespace ImagePicker.DataSources
             }
         }
 
-        public void AddImage(Image image)
+        public async Task AddImage(Image image)
         {
-            _imagesContext.Images.Add(image);
-            _imagesContext.SaveChanges();
+            await _imagesContext.Images.AddAsync(image);
+            await _imagesContext.SaveChangesAsync();
         }
 
-        public List<Guid> ReadImagesIdsList(short skip, short take)
+        public async Task<List<Guid>> ReadImagesIdsList(short skip, short take)
         {
             try
             {
-                return _imagesContext.Images.Skip(skip).Take(take).Select(x => x.Id).ToList();
+                return await _imagesContext.Images.Skip(skip).Take(take).Select(x => x.Id).ToListAsync();
             }
             catch
             {
@@ -43,15 +44,15 @@ namespace ImagePicker.DataSources
             }
         }
 
-        public Image ReadInformations(Guid id)
+        public async Task<Image> ReadInformations(Guid id)
         {
             try
             {
-                return _imagesContext.Images.Where(x => x.Id == id).Select(x => new Image(id)
+                return await _imagesContext.Images.Where(x => x.Id == id).Select(x => new Image(id)
                 {
                     Extension = x.Extension,
                     Status = x.Status
-                }).First();
+                }).FirstAsync();
             }
             catch
             {

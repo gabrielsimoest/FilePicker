@@ -16,9 +16,9 @@ namespace FilePicker.Web.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(Guid id, short width = 0, short height = 0, bool preserveAspect = true)
+        public async Task<IActionResult> Get(Guid id, short width = 0, short height = 0, bool preserveAspect = true)
         {
-            var image = _imagePickerHandler.GetImage(id, width, height, preserveAspect);
+            var image = await _imagePickerHandler.GetImage(id, width, height, preserveAspect);
             if (image == null || image.File == null || image.File.Length == 0)
                 return NotFound();
 
@@ -27,9 +27,9 @@ namespace FilePicker.Web.Controllers
 
         [Authorize]
         [HttpGet("{id}.{extension}")]
-        public IActionResult Get(Guid id, string extension, short width = 0, short height = 0, bool preserveAspect = true)
+        public async Task<IActionResult> Get(Guid id, string extension, short width = 0, short height = 0, bool preserveAspect = true)
         {
-            var image = _imagePickerHandler.GetImage(id, width, height, extension, preserveAspect);
+            var image = await _imagePickerHandler.GetImage(id, width, height, extension, preserveAspect);
             if (image == null || image.File == null || image.File.Length == 0)
                 return NotFound();
 
