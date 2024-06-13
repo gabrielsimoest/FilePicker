@@ -15,9 +15,9 @@ namespace FilePicker.Web.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(Guid id, short width = 0, short height = 0, string extension = "image/webp")
+        public IActionResult Get(Guid id, short width = 0, short height = 0, string extension = "image/webp", bool preserveAspect = true)
         {
-            var image = _imagePickerHandler.GetImage(id, width, height, extension);
+            var image = _imagePickerHandler.GetImage(id, width, height, extension, preserveAspect);
             if (image == null || image.File == null || image.File.Length == 0)
                 return NotFound();
 

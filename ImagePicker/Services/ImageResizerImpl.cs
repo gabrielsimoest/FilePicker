@@ -1,11 +1,13 @@
-﻿using ImagePicker.Entities;
+﻿using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
 
 namespace ImagePicker.Services
 {
     internal class ImageResizerImpl : IImageResizer
     {
-        public Entities.Image ResizeImage(Entities.Image image, short width, short height)
+        public Entities.Image ResizeImage(Entities.Image image, short width, short height, bool preserveAspect)
         {
             if (image.File == null || image.File.Length == 0)
                 throw new ArgumentException("Image file is empty.");
@@ -17,6 +19,23 @@ namespace ImagePicker.Services
             {
                 using (var img = SixLabors.ImageSharp.Image.Load(imageStream))
                 {
+                    if (preserveAspect)
+                    {
+                        float aspectRatio = (float)img.Width / img.Height;
+
+                        if (width == 0)
+                            width = (short)(height * aspectRatio);
+                        else if (height == 0)
+                            height = (short)(width / aspectRatio);
+                        else
+                        {
+                            if ((float)width / height != aspectRatio)
+                            {
+                                height = (short)(width / aspectRatio);
+                            }
+                        }
+                    }
+
                     img.Mutate(x => x.Resize(width, height));
                     using (var outputStream = new MemoryStream())
                     {
@@ -25,13 +44,22 @@ namespace ImagePicker.Services
                         switch (image.Extension)
                         {
                             case "image/webp":
-                                encoder = new SixLabors.ImageSharp.Formats.Webp.WebpEncoder();
+                                encoder = new WebpEncoder()
+                                {
+                                    Quality = 90
+                                };
                                 break;
                             case "image/png":
-                                encoder = new SixLabors.ImageSharp.Formats.Png.PngEncoder();
+                                encoder = new PngEncoder()
+                                {
+                                    CompressionLevel = PngCompressionLevel.NoCompression
+                                };
                                 break;
                             case "image/jpeg":
-                                encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder();
+                                encoder = new JpegEncoder()
+                                {
+                                    Quality = 90
+                                };
                                 break;
                             default:
                                 throw new NotSupportedException($"Image format '{image.Extension}' is not supported.");

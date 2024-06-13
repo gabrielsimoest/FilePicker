@@ -9,6 +9,6 @@ namespace ImagePicker
 {
     public interface IImagePickerHandler
     {
-        Image GetImage(Guid Id, short width, short height, string extension);
+        Image GetImage(Guid Id, short width, short height, string extension, bool preserveAspect = true);
     }
 }

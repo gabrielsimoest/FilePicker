@@ -9,6 +9,6 @@ namespace ImagePicker.Services
 {
     public interface IImageResizer
     {
-        Image ResizeImage(Image image, short width, short height);
+        Image ResizeImage(Image image, short width, short height, bool preserveAspect);
     }
 }

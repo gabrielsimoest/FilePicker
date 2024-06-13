@@ -30,7 +30,7 @@ namespace ImagePicker
             _logger = logger;
         }
 
-        public Image GetImage(Guid id, short width, short height, string extension)
+        public Image GetImage(Guid id, short width, short height, string extension, bool preserveAspect)
         {
             var image = new Image(id);
 
@@ -45,7 +45,7 @@ namespace ImagePicker
                     if (image.File.Length == 0)
                         throw new Exception("Image not found");
 
-                    image = _imageResizer.ResizeImage(image, width, height);
+                    image = _imageResizer.ResizeImage(image, width, height, preserveAspect);
 
                     _imageDiskCache.AddCacheImage(image, width, height);
                 }
