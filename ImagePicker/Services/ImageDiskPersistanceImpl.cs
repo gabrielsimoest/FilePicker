@@ -24,14 +24,18 @@ namespace ImagePicker.Services
 
         public void AddCacheImage(Image image, short width, short height)
         {
-            string filePath = Path.Combine(_cacheDirectory, $"{image.Id}_{width}x{height}.{image.Extension}");
+            string extension = TreatExtension(image.Extension);
+
+            string filePath = Path.Combine(_cacheDirectory, $"{image.Id}_{width}x{height}{extension}");
 
             File.WriteAllBytes(filePath, image.File);
         }
 
         public Image GetCachedImage(Guid id, short width, short height, string extension)
         {
-            string filePath = Path.Combine(_cacheDirectory, $"{id}_{width}x{height}.{extension}");
+            var extensionToSearch = TreatExtension(extension);
+
+            string filePath = Path.Combine(_cacheDirectory, $"{id}_{width}x{height}{extensionToSearch}");
 
             if (File.Exists(filePath))
             {
@@ -40,8 +44,22 @@ namespace ImagePicker.Services
             }
             else
             {
-                throw new FileNotFoundException("The cached image could not be found.");
+                return new Image(new Guid());
             }
+        }
+
+        private string TreatExtension(string extension)
+        {
+            string extensionToReturn = extension switch
+            {
+                "image/webp" => ".webp",
+                "image/png" => ".png",
+                "image/jpeg" => ".jpg",
+                "image/gif" => ".gif",
+                _ => extension
+            };
+
+            return extensionToReturn;
         }
     }
 }

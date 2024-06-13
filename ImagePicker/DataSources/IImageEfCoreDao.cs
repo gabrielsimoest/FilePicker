@@ -10,6 +10,9 @@ namespace ImagePicker.DataSources
     internal interface IImageEfCoreDao
     {
         Image ReadImage(Guid id);
+        Image ReadInformations(Guid id);
+
+        List<Guid> ReadImagesIdsList(short skip, short take);
 
         void AddImage(Image image);
     }

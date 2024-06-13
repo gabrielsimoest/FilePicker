@@ -12,16 +12,16 @@ namespace ImagePicker
 {
     public class ImagePickerHandlerImpl : IImagePickerHandler
     {
-        private IImageDiskPersistance _imageDiskCache;
-        private IImageResizer _imageResizer;
-        private IImageRepository _imageRepository;
-        private ILogger _logger;
+        private readonly IImageDiskPersistance _imageDiskCache;
+        private readonly IImageResizer _imageResizer;
+        private readonly IImageRepository _imageRepository;
+        private readonly ILogger<ImagePickerHandlerImpl> _logger;
 
         public ImagePickerHandlerImpl(
             IImageDiskPersistance imageDiskCache,
             IImageResizer imageResizer,
             IImageRepository imageRepository,
-            ILogger logger
+            ILogger<ImagePickerHandlerImpl> logger
             )
         {
             _imageDiskCache = imageDiskCache;
@@ -30,17 +30,17 @@ namespace ImagePicker
             _logger = logger;
         }
 
-        public Image GetImage(Guid Id, short width, short height, string extension)
+        public Image GetImage(Guid id, short width, short height, string extension)
         {
-            var image = new Image(Id);
+            var image = new Image(id);
 
             try
             {
-                image = _imageDiskCache.GetCachedImage(Id, width, height, extension);
+                image = _imageDiskCache.GetCachedImage(id, width, height, extension);
 
                 if (image.File.Length == 0)
                 {
-                    image = _imageRepository.GetImage(Id);
+                    image = _imageRepository.GetImage(id);
 
                     if (image.File.Length == 0)
                         throw new Exception("Image not found");

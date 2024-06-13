@@ -1,10 +1,10 @@
 using ImagePicker;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ImageWebPicker.Image
+namespace FilePicker.Web.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class ImageController : ControllerBase
     {
         private readonly IImagePickerHandler _imagePickerHandler;
@@ -14,10 +14,14 @@ namespace ImageWebPicker.Image
             _imagePickerHandler = imagePickerHandler;
         }
 
-        [HttpGet]
-        public void Get(Guid Id, short width, short height, string extension = "webp")
+        [HttpGet("{id}")]
+        public IActionResult Get(Guid id, short width = 0, short height = 0, string extension = "image/webp")
         {
-            _imagePickerHandler.GetImage(Id, width, height, extension);
+            var image = _imagePickerHandler.GetImage(id, width, height, extension);
+            if (image == null || image.File == null || image.File.Length == 0)
+                return NotFound();
+
+            return File(image.File, image.Extension);
         }
     }
 }

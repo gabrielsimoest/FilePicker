@@ -1,7 +1,5 @@
 ﻿using ImagePicker.Entities;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
+using SixLabors.ImageSharp.Processing;
 
 namespace ImagePicker.Services
 {
@@ -10,56 +8,43 @@ namespace ImagePicker.Services
         public Entities.Image ResizeImage(Entities.Image image, short width, short height)
         {
             if (image.File == null || image.File.Length == 0)
-            {
                 throw new ArgumentException("Image file is empty.");
-            }
 
-            using (var inputStream = new MemoryStream(image.File))
+            if(width == 0 && height == 0)
+                return image;
+
+            using (var imageStream = new MemoryStream(image.File))
             {
-                using (var originalImage = System.Drawing.Image.FromStream(inputStream))
+                using (var img = SixLabors.ImageSharp.Image.Load(imageStream))
                 {
-                    var resizedBitmap = new Bitmap(width, height);
-
-                    using (var graphics = Graphics.FromImage(resizedBitmap))
-                    {
-                        graphics.CompositingQuality = CompositingQuality.HighQuality;
-                        graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                        graphics.SmoothingMode = SmoothingMode.HighQuality;
-
-                        graphics.DrawImage(originalImage, 0, 0, width, height);
-                    }
-
+                    img.Mutate(x => x.Resize(width, height));
                     using (var outputStream = new MemoryStream())
                     {
-                        ImageFormat format = GetImageFormat(image.Extension);
-                        resizedBitmap.Save(outputStream, format);
+                        SixLabors.ImageSharp.Formats.IImageEncoder encoder;
 
-                        return new Entities.Image(image.Id)
+                        switch (image.Extension)
                         {
-                            File = outputStream.ToArray(),
-                            Extension = image.Extension
-                        };
+                            case "image/webp":
+                                encoder = new SixLabors.ImageSharp.Formats.Webp.WebpEncoder();
+                                break;
+                            case "image/png":
+                                encoder = new SixLabors.ImageSharp.Formats.Png.PngEncoder();
+                                break;
+                            case "image/jpeg":
+                                encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder();
+                                break;
+                            default:
+                                throw new NotSupportedException($"Image format '{image.Extension}' is not supported.");
+                        }
+
+                        img.Save(outputStream, encoder);
+                        image.File = outputStream.ToArray();
+                        image.Extension = image.Extension;
                     }
                 }
             }
-        }
 
-        private ImageFormat GetImageFormat(string extension)
-        {
-            switch (extension.ToLower())
-            {
-                case ".jpg":
-                case ".jpeg":
-                    return ImageFormat.Jpeg;
-                case ".png":
-                    return ImageFormat.Png;
-                case ".bmp":
-                    return ImageFormat.Bmp;
-                case ".gif":
-                    return ImageFormat.Gif;
-                default:
-                    throw new NotSupportedException($"Unsupported image format: {extension}");
-            }
+            return image;
         }
     }
 }
