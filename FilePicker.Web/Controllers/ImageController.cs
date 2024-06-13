@@ -1,4 +1,5 @@
 using ImagePicker;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FilePicker.Web.Controllers
@@ -15,7 +16,18 @@ namespace FilePicker.Web.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(Guid id, short width = 0, short height = 0, string extension = "image/webp", bool preserveAspect = true)
+        public IActionResult Get(Guid id, short width = 0, short height = 0, bool preserveAspect = true)
+        {
+            var image = _imagePickerHandler.GetImage(id, width, height, preserveAspect);
+            if (image == null || image.File == null || image.File.Length == 0)
+                return NotFound();
+
+            return File(image.File, image.Extension);
+        }
+
+        [Authorize]
+        [HttpGet("{id}.{extension}")]
+        public IActionResult Get(Guid id, string extension, short width = 0, short height = 0, bool preserveAspect = true)
         {
             var image = _imagePickerHandler.GetImage(id, width, height, extension, preserveAspect);
             if (image == null || image.File == null || image.File.Length == 0)

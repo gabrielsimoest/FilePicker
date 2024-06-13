@@ -44,7 +44,7 @@ namespace FilePicker.Web.Controllers
         }
 
         [HttpGet("{id}")]
-        public InformationResult Get(Guid id)
+        public InformationResult GetInfo(Guid id)
         {
             var infos = _imageRepository.GetInformations(id);
 

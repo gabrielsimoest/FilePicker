@@ -36,6 +36,7 @@ namespace ImagePicker.Persistance
             services.AddDynamic<IImageResizer, ImageResizerImpl>(serviceLifetime);
             services.AddDynamic<IImageEfCoreDao, ImageEfCoreDao>(serviceLifetime);
             services.AddDynamic<IImageRepository, ImageRepository>(serviceLifetime);
+            services.AddDynamic<IImageWebpConverter, ImageWebpConverter>(serviceLifetime);
         }
 
         private static void AddDynamic<TInterface, TClass>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
