@@ -1,4 +1,6 @@
 ﻿using ImagePicker.Entities;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Webp;
@@ -32,34 +34,44 @@ namespace ImagePicker.Services
                         height = (short)(width / aspectRatio);
                     else
                     {
-                        if ((float)width / height != aspectRatio)
-                        {
+                        if ((float)width / height > aspectRatio)
+                            width = (short)(height * aspectRatio);
+                        else
                             height = (short)(width / aspectRatio);
-                        }
                     }
                 }
 
-                img.Mutate(x => x.Resize(width, height));
+                img.Mutate(x => x
+                    .Resize(new ResizeOptions
+                    {
+                        Size = new Size(width, height),
+                        Mode = preserveAspect ? ResizeMode.Max : ResizeMode.Crop,
+                        Sampler = KnownResamplers.Bicubic
+                    })
+                );
+
                 using (var outputStream = new MemoryStream())
                 {
-                    SixLabors.ImageSharp.Formats.IImageEncoder encoder;
+                    IImageEncoder encoder;
 
-                    switch (image.Extension)
+                    switch (image.Extension.ToLower())
                     {
                         case "image/webp":
-                            encoder = new WebpEncoder()
+                            encoder = new WebpEncoder
                             {
-                                Quality = 90
+                                Quality = 90,
+                                Method = WebpEncodingMethod.BestQuality,
+                                NearLossless = true
                             };
                             break;
                         case "image/png":
-                            encoder = new PngEncoder()
+                            encoder = new PngEncoder
                             {
-                                CompressionLevel = PngCompressionLevel.NoCompression
+                                CompressionLevel = PngCompressionLevel.BestCompression
                             };
                             break;
                         case "image/jpeg":
-                            encoder = new JpegEncoder()
+                            encoder = new JpegEncoder
                             {
                                 Quality = 90
                             };
@@ -70,7 +82,6 @@ namespace ImagePicker.Services
 
                     await img.SaveAsync(outputStream, encoder);
                     image.File = outputStream.ToArray();
-                    image.Extension = image.Extension;
                 }
             }
 

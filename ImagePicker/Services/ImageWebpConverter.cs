@@ -1,7 +1,5 @@
 ﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Webp;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -15,7 +13,14 @@ namespace ImagePicker.Services
             var myImage = await Image.LoadAsync(inStream);
             using var outStream = new MemoryStream();
 
-            await myImage.SaveAsync(outStream, new WebpEncoder());
+            var encoder = new WebpEncoder
+            {
+                Quality = 100,
+                Method = WebpEncodingMethod.BestQuality,
+                NearLossless = true
+            };
+
+            await myImage.SaveAsync(outStream, encoder);
 
             return new Entities.Image(image.Id)
             {
