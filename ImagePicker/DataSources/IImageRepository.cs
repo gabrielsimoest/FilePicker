@@ -16,5 +16,8 @@ namespace ImagePicker.DataSources
         Task<Image> GetImage(Guid id);
 
         Task<Image> SaveImage(Image image);
+
+        Task DeleteImage(Guid id);
+        Task DeleteImage(Image image);
     }
 }

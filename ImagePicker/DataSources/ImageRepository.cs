@@ -11,6 +11,21 @@ namespace ImagePicker.DataSources
             _imageEfCoreDao = imageEfCoreDao;
         }
 
+        public async Task DeleteImage(Guid id)
+        {
+            Image image = await GetImage(id);
+
+            if (image.Id == Guid.Empty)
+                throw new Exception("Image not found");
+
+            await _imageEfCoreDao.DeleteImage(image);
+        }
+
+        public async Task DeleteImage(Image image)
+        {
+            await _imageEfCoreDao.DeleteImage(image);
+        }
+
         public async Task<Image> GetImage(Guid id)
         {
             return await _imageEfCoreDao.ReadImage(id);

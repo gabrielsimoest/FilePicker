@@ -59,5 +59,11 @@ namespace ImagePicker.DataSources
                 return new Image(new Guid());
             }
         }
+
+        public async Task DeleteImage(Image image)
+        {
+            _imagesContext.Images.Remove(image);
+            await _imagesContext.SaveChangesAsync();
+        }
     }
 }

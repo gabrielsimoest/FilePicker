@@ -15,5 +15,6 @@ namespace ImagePicker.DataSources
         Task<List<Guid>> ReadImagesIdsList(short skip, short take);
 
         Task AddImage(Image image);
+        Task DeleteImage(Image image);
     }
 }

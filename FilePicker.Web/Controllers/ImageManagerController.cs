@@ -75,7 +75,7 @@ namespace FilePicker.Web.Controllers
                 {
                     File = fileBytes,
                     Extension = file.ContentType
-                };  
+                };
 
                 var savedImage = _imageRepository.SaveImage(image);
 
@@ -90,9 +90,17 @@ namespace FilePicker.Web.Controllers
         }
 
         [HttpDelete("{id}")]
-        public void Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await _imageRepository.DeleteImage(id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Ocorreu um erro interno ao tentar deletar a imagem.", Details = ex.Message });
+            }
         }
     }
 }
