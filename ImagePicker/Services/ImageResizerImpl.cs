@@ -24,29 +24,12 @@ namespace ImagePicker.Services
             {
                 var img = await SixLabors.ImageSharp.Image.LoadAsync(imageStream);
 
-                if (preserveAspect)
-                {
-                    float aspectRatio = (float)img.Width / img.Height;
-
-                    if (width == 0)
-                        width = (short)(height * aspectRatio);
-                    else if (height == 0)
-                        height = (short)(width / aspectRatio);
-                    else
-                    {
-                        if ((float)width / height > aspectRatio)
-                            width = (short)(height * aspectRatio);
-                        else
-                            height = (short)(width / aspectRatio);
-                    }
-                }
-
                 img.Mutate(x => x
                     .Resize(new ResizeOptions
                     {
                         Size = new Size(width, height),
-                        Mode = preserveAspect ? ResizeMode.Max : ResizeMode.Crop,
-                        Sampler = KnownResamplers.Bicubic
+                        Mode = ResizeMode.Max,
+                        Sampler = KnownResamplers.Lanczos8
                     })
                 );
 
@@ -59,7 +42,7 @@ namespace ImagePicker.Services
                         case "image/webp":
                             encoder = new WebpEncoder
                             {
-                                Quality = 90,
+                                Quality = 80,
                                 Method = WebpEncodingMethod.BestQuality,
                                 NearLossless = true
                             };
@@ -67,13 +50,13 @@ namespace ImagePicker.Services
                         case "image/png":
                             encoder = new PngEncoder
                             {
-                                CompressionLevel = PngCompressionLevel.BestCompression
+                                CompressionLevel = PngCompressionLevel.DefaultCompression
                             };
                             break;
                         case "image/jpeg":
                             encoder = new JpegEncoder
                             {
-                                Quality = 90
+                                Quality = 80
                             };
                             break;
                         default:

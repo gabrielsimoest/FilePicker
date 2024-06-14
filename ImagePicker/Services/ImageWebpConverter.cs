@@ -17,7 +17,7 @@ namespace ImagePicker.Services
             {
                 Quality = 100,
                 Method = WebpEncodingMethod.BestQuality,
-                NearLossless = true
+                FilterStrength = 0
             };
 
             await myImage.SaveAsync(outStream, encoder);
