@@ -63,23 +63,30 @@ namespace FilePicker.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromForm] IFormFile file)
         {
-            if (file == null || file.Length == 0)
-                return BadRequest("Invalid file");
-
-            using (var memoryStream = new MemoryStream())
+            try
             {
-                await file.CopyToAsync(memoryStream);
-                byte[] fileBytes = memoryStream.ToArray();
+                if (file == null || file.Length == 0)
+                    return BadRequest("Invalid file");
 
-                var image = new Image(new Guid())
+                using (var memoryStream = new MemoryStream())
                 {
-                    File = fileBytes,
-                    Extension = file.ContentType
-                };
+                    await file.CopyToAsync(memoryStream);
+                    byte[] fileBytes = memoryStream.ToArray();
 
-                var savedImage = _imageRepository.SaveImage(image);
+                    var image = new Image(new Guid())
+                    {
+                        File = fileBytes,
+                        Extension = file.ContentType
+                    };
 
-                return CreatedAtAction(nameof(Get), new { id = savedImage.Id }, savedImage);
+                    var savedImage = await _imageRepository.SaveImage(image);
+
+                    return CreatedAtAction(nameof(Get), new { id = savedImage.Id }, savedImage);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 
