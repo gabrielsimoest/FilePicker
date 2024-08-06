@@ -1,10 +1,8 @@
 ﻿using FilePicker.Web.Models;
-using ImagePicker;
 using ImagePicker.DataSources;
 using ImagePicker.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 
 namespace FilePicker.Web.Controllers
 {
@@ -41,6 +39,15 @@ namespace FilePicker.Web.Controllers
             }
 
             return imagesListResult;
+        }
+
+        [HttpGet("GetTotalCount")]
+        public async Task<int> GetTotalCount()
+        {
+            var imagesListResult = new List<ImagesListResult>();
+            var totalCount = await _imageRepository.CountImages();
+
+            return totalCount;
         }
 
         [HttpGet("{id}")]

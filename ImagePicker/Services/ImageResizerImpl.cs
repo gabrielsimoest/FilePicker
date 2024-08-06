@@ -1,12 +1,9 @@
-﻿using ImagePicker.Entities;
-using SixLabors.ImageSharp;
+﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace ImagePicker.Services
 {

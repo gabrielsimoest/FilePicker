@@ -44,6 +44,18 @@ namespace ImagePicker.DataSources
             }
         }
 
+        public async Task<int> CountImages()
+        {
+            try
+            {
+                return await _imagesContext.Images.CountAsync();
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
         public async Task<Image> ReadInformations(Guid id)
         {
             try

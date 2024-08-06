@@ -11,6 +11,8 @@ namespace ImagePicker.DataSources
     {
         Task<List<Guid>> GetImagesIdsList(short skip, short take);
 
+        Task<int> CountImages();
+
         Task<Image> GetInformations(Guid id);
 
         Task<Image> GetImage(Guid id);

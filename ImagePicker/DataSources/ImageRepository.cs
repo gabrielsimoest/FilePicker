@@ -36,6 +36,11 @@ namespace ImagePicker.DataSources
             return await _imageEfCoreDao.ReadImagesIdsList(skip, take);
         }
 
+        public async Task<int> CountImages()
+        {
+            return await _imageEfCoreDao.CountImages();
+        }
+
         public async Task<Image> GetInformations(Guid id)
         {
             return await _imageEfCoreDao.ReadInformations(id);
