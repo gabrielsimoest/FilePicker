@@ -22,6 +22,10 @@ namespace FilePicker.Web.Controllers
             if (image == null || image.File == null || image.File.Length == 0)
                 return NotFound();
 
+            Response.Headers["Cache-Control"] = "public,max-age=86400";
+            Response.Headers["Pragma"] = "public";
+            Response.Headers["Expires"] = DateTime.UtcNow.AddDays(1).ToString("R");
+
             return File(image.File, image.Extension);
         }
 
@@ -32,6 +36,10 @@ namespace FilePicker.Web.Controllers
             var image = await _imagePickerHandler.GetImage(id, width, height, extension, preserveAspect);
             if (image == null || image.File == null || image.File.Length == 0)
                 return NotFound();
+
+            Response.Headers["Cache-Control"] = "public,max-age=86400";
+            Response.Headers["Pragma"] = "public";
+            Response.Headers["Expires"] = DateTime.UtcNow.AddDays(1).ToString("R");
 
             return File(image.File, image.Extension);
         }
