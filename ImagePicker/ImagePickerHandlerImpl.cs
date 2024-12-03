@@ -47,12 +47,13 @@ namespace ImagePicker
                 if (image.File.Length == 0)
                 {
                     await _resizeSemaphore.WaitAsync();
-                    image = await _imageDiskCache.GetCachedImage(id, width, height, extension);
-                    if (image.File.Length != 0)
-                        return image;
 
                     try
                     {
+                        image = await _imageDiskCache.GetCachedImage(id, width, height, extension);
+                        if (image.File.Length != 0)
+                            return image;
+
                         image = await _imageRepository.GetImage(id);
 
                         if (image.File.Length == 0)
@@ -77,6 +78,7 @@ namespace ImagePicker
             return image;
         }
 
+
         public async Task<Image> GetImage(Guid id, short width, short height, string extension, bool preserveAspect)
         {
             var image = new Image(id);
@@ -87,14 +89,27 @@ namespace ImagePicker
 
                 if (image.File.Length == 0)
                 {
-                    image = await _imageRepository.GetImage(id);
+                    await _resizeSemaphore.WaitAsync();
+                    
+                    try
+                    {
+                        image = await _imageDiskCache.GetCachedImage(id, width, height, extension);
+                        if (image.File.Length != 0)
+                            return image;
 
-                    if (image.File.Length == 0)
-                        throw new Exception("Image not found");
+                        image = await _imageRepository.GetImage(id);
 
-                    image = await _imageResizer.ResizeImage(image, width, height, preserveAspect);
+                        if (image.File.Length == 0)
+                            throw new Exception("Image not found");
 
-                    await _imageDiskCache.AddCacheImage(image, width, height);
+                        image = await _imageResizer.ResizeImage(image, width, height, preserveAspect);
+
+                        await _imageDiskCache.AddCacheImage(image, width, height);
+                    }
+                    finally
+                    {
+                        _resizeSemaphore.Release();
+                    }
                 }
             }
             catch (Exception ex)
