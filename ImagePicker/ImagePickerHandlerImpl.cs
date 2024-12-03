@@ -18,6 +18,8 @@ namespace ImagePicker
         private readonly IImageWebpConverter _imageWebpConverter;
         private readonly ILogger<ImagePickerHandlerImpl> _logger;
 
+        private static readonly SemaphoreSlim _resizeSemaphore = new SemaphoreSlim(1, 1);
+
         public ImagePickerHandlerImpl(
             IImageDiskPersistance imageDiskCache,
             IImageResizer imageResizer,
@@ -44,15 +46,27 @@ namespace ImagePicker
 
                 if (image.File.Length == 0)
                 {
-                    image = await _imageRepository.GetImage(id);
+                    await _resizeSemaphore.WaitAsync();
+                    image = await _imageDiskCache.GetCachedImage(id, width, height, extension);
+                    if (image.File.Length != 0)
+                        return image;
 
-                    if (image.File.Length == 0)
-                        throw new Exception("Image not found");
+                    try
+                    {
+                        image = await _imageRepository.GetImage(id);
 
-                    image = await _imageResizer.ResizeImage(image, width, height, preserveAspect);
-                    image = await _imageWebpConverter.ConvertToWebP(image);
+                        if (image.File.Length == 0)
+                            throw new Exception("Image not found");
 
-                    await _imageDiskCache.AddCacheImage(image, width, height);
+                        image = await _imageResizer.ResizeImage(image, width, height, preserveAspect);
+                        image = await _imageWebpConverter.ConvertToWebP(image);
+
+                        await _imageDiskCache.AddCacheImage(image, width, height);
+                    }
+                    finally
+                    {
+                        _resizeSemaphore.Release();
+                    }
                 }
             }
             catch (Exception ex)
