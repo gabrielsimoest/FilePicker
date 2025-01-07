@@ -18,24 +18,22 @@ namespace ImagePicker.Services
 
             ImageFormat imageFormat = originalImage.RawFormat;
 
-            if (imageFormat.Equals(ImageFormat.Jpeg) || imageFormat.Equals(ImageFormat.Png))
-            {
-                var encoderParams = new EncoderParameters(1);
-                encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 170L);
+            var encoderParams = new EncoderParameters(1);
+            encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 100L);
 
-                if (imageFormat.Equals(ImageFormat.Png))
-                {
-                    originalImage.Save(compressedStream, ImageFormat.Png);
-                }
-                else
-                {
-                    var jpgEncoder = ImageCodecInfo.GetImageEncoders().FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
-                    originalImage.Save(compressedStream, jpgEncoder, encoderParams);
-                }
+            if (imageFormat.Equals(ImageFormat.Png))
+            {
+                var pngEncoder = ImageCodecInfo.GetImageEncoders().FirstOrDefault(codec => codec.FormatID == ImageFormat.Png.Guid);
+                originalImage.Save(compressedStream, pngEncoder, encoderParams);
+            }
+            else if (imageFormat.Equals(ImageFormat.Jpeg))
+            {
+                var jpgEncoder = ImageCodecInfo.GetImageEncoders().FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
+                originalImage.Save(compressedStream, jpgEncoder, encoderParams);
             }
             else
             {
-                throw new InvalidOperationException("Unsupported image format");
+                throw new NotSupportedException($"Image format '{imageFormat}' is not supported.");
             }
 
             compressedStream.Seek(0, SeekOrigin.Begin);
@@ -45,7 +43,7 @@ namespace ImagePicker.Services
             using var webpStream = new MemoryStream();
             var webpEncoder = new WebpEncoder()
             {
-                Quality = 80
+                Quality = 100
             };
 
             await imageSharp.SaveAsync(webpStream, webpEncoder);
