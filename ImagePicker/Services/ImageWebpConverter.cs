@@ -16,11 +16,27 @@ namespace ImagePicker.Services
 
             using var compressedStream = new MemoryStream();
 
-            var encoderParams = new EncoderParameters(1);
-            encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 170L);
+            ImageFormat imageFormat = originalImage.RawFormat;
 
-            var jpgEncoder = ImageCodecInfo.GetImageEncoders().FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
-            originalImage.Save(compressedStream, jpgEncoder, encoderParams);
+            if (imageFormat.Equals(ImageFormat.Jpeg) || imageFormat.Equals(ImageFormat.Png))
+            {
+                var encoderParams = new EncoderParameters(1);
+                encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 170L);
+
+                if (imageFormat.Equals(ImageFormat.Png))
+                {
+                    originalImage.Save(compressedStream, ImageFormat.Png);
+                }
+                else
+                {
+                    var jpgEncoder = ImageCodecInfo.GetImageEncoders().FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
+                    originalImage.Save(compressedStream, jpgEncoder, encoderParams);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Unsupported image format");
+            }
 
             compressedStream.Seek(0, SeekOrigin.Begin);
 
