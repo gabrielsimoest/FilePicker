@@ -15,8 +15,18 @@ builder.Services.AddCors(options =>
         {
             builder.AllowAnyOrigin()
                    .AllowAnyHeader()
-                   .AllowAnyMethod();
+                   .AllowAnyMethod()
+                   // Sem isso o JS da pagina nao enxerga os validadores de cache.
+                   .WithExposedHeaders("ETag", "Cache-Control", "Content-Length");
         });
+});
+
+// Comprime so as respostas JSON: imagem ja vem comprimida, e passar gzip por cima
+// so gasta CPU para engordar o payload.
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.MimeTypes = new[] { "application/json", "text/plain" };
 });
 
 builder.Services.AddControllers();
@@ -48,6 +58,8 @@ builder.Services.AddAuthentication("BasicAuthentication")
     .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
 
 var app = builder.Build();
+
+app.UseResponseCompression();
 
 app.UseCors("AllowAllOrigins");
 

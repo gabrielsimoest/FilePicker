@@ -1,15 +1,11 @@
-﻿using ImagePicker.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace ImagePicker.Services
 {
+    /// <summary>Cache em disco das variacoes ja renderizadas.</summary>
     public interface IImageDiskPersistance
     {
-        Task AddCacheImage(Image image, short width, short height);
-        Task<Image> GetCachedImage(Guid id, short width, short height, string extension);
+        /// <summary>Bytes da variacao pedida, ou <c>null</c> se ela ainda nao foi renderizada.</summary>
+        Task<byte[]?> TryGetAsync(Guid id, ImageRenderRequest request, CancellationToken cancellationToken = default);
+
+        Task SaveAsync(Guid id, ImageRenderRequest request, byte[] content, CancellationToken cancellationToken = default);
     }
 }

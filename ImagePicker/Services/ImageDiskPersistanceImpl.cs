@@ -1,65 +1,91 @@
-﻿using ImagePicker.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ImagePicker.Services
 {
-    internal class ImageDiskPersistanceImpl : IImageDiskPersistance
+    /// <summary>
+    /// Cache em disco, uma pasta por prefixo do id para nao acumular dezenas de milhares
+    /// de arquivos num diretorio so.
+    /// </summary>
+    internal sealed class ImageDiskPersistanceImpl : IImageDiskPersistance
     {
         private readonly string _cacheDirectory;
+        private readonly ILogger<ImageDiskPersistanceImpl> _logger;
 
-        public ImageDiskPersistanceImpl()
+        public ImageDiskPersistanceImpl(IOptions<ImageDeliveryOptions> options, ILogger<ImageDiskPersistanceImpl> logger)
         {
-            string tempPath = Path.GetTempPath();
-            _cacheDirectory = Path.Combine(tempPath, "FilePickerImages");
+            _logger = logger;
 
-            if (!Directory.Exists(_cacheDirectory))
+            var configured = options.Value.CacheDirectory;
+            _cacheDirectory = string.IsNullOrWhiteSpace(configured)
+                ? Path.Combine(Path.GetTempPath(), "FilePickerImages2")
+                : configured;
+
+            Directory.CreateDirectory(_cacheDirectory);
+        }
+
+        public async Task<byte[]?> TryGetAsync(Guid id, ImageRenderRequest request, CancellationToken cancellationToken = default)
+        {
+            var path = BuildPath(id, request);
+
+            try
             {
-                Directory.CreateDirectory(_cacheDirectory);
+                if (!File.Exists(path))
+                    return null;
+
+                var bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
+
+                // Arquivo vazio e resto de escrita interrompida: trata como miss em vez de servir 0 byte.
+                return bytes.Length == 0 ? null : bytes;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _logger.LogWarning(ex, "Falha lendo cache em disco de {ImageId}; seguindo como cache miss.", id);
+                return null;
             }
         }
 
-        public async Task AddCacheImage(Image image, short width, short height)
+        public async Task SaveAsync(Guid id, ImageRenderRequest request, byte[] content, CancellationToken cancellationToken = default)
         {
-            string extension = TreatExtension(image.Extension);
+            if (content.Length == 0)
+                return;
 
-            string filePath = Path.Combine(_cacheDirectory, $"{image.Id}_{width}x{height}{extension}");
+            var path = BuildPath(id, request);
 
-            await File.WriteAllBytesAsync(filePath, image.File);
-        }
-
-        public async Task<Image> GetCachedImage(Guid id, short width, short height, string extension)
-        {
-            var extensionToSearch = TreatExtension(extension);
-
-            string filePath = Path.Combine(_cacheDirectory, $"{id}_{width}x{height}{extensionToSearch}");
-
-            if (File.Exists(filePath))
+            try
             {
-                byte[] fileBytes = await File.ReadAllBytesAsync(filePath);
-                return new Image(id) { File = fileBytes, Extension = extension };
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+
+                // Grava num temporario e move: um leitor concorrente nunca ve arquivo pela metade.
+                var temporary = $"{path}.{Guid.NewGuid():N}.tmp";
+                await File.WriteAllBytesAsync(temporary, content, cancellationToken).ConfigureAwait(false);
+                File.Move(temporary, path, overwrite: true);
             }
-            else
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                return new Image(new Guid());
+                // Cache e otimizacao: falhar aqui nao pode derrubar a resposta.
+                _logger.LogWarning(ex, "Falha gravando cache em disco de {ImageId}.", id);
             }
         }
 
-        private string TreatExtension(string extension)
+        private string BuildPath(Guid id, ImageRenderRequest request)
         {
-            string extensionToReturn = extension switch
-            {
-                "image/webp" => ".webp",
-                "image/png" => ".png",
-                "image/jpeg" => ".jpg",
-                "image/gif" => ".gif",
-                _ => extension
-            };
+            var key = id.ToString("N");
+            var extension = FileExtensionFor(request.ContentType);
 
-            return extensionToReturn;
+            return Path.Combine(
+                _cacheDirectory,
+                key[..2],
+                $"{key}_{request.CacheDiscriminator()}{extension}");
         }
+
+        private static string FileExtensionFor(string contentType) => ImageRendererImpl.Normalize(contentType) switch
+        {
+            "image/webp" => ".webp",
+            "image/png" => ".png",
+            "image/jpeg" => ".jpg",
+            "image/gif" => ".gif",
+            _ => ".bin"
+        };
     }
 }
